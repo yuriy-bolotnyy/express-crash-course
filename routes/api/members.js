@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const members = require('../../Members');
+let members = require('../../Members');
 const uuid = require('uuid')
 
 router.get('/', (req, res) => res.json(members))
@@ -44,26 +44,17 @@ router.post('/', (req, res) => {
 
 })
 
+const member_by_id = id => members.filter(member => member.id === parseInt(id))
+
 // Update member
 router.put('/:id', (req, res) => {
-    // res.json(req.body)
-    // res.send(req.body)
-    // res.send("hello post")
-
-    // const uid = uuid.v4()
     const id = req.params.id
-
-    // // members.push(newMember)
-    // // res.json(members.filter(member => member.id === uid))
-    // const addedMember = members.filter(member => member.id === uid)
-
     const newName = req.body.name;
     const newEmail = req.body.email;
 
-    const member_by_id = id => members.filter(member => member.id === parseInt(id))
+    // const member_by_id = id => members.filter(member => member.id === parseInt(id))
 
     const memberBeforeUpdate = member_by_id(id)
-    // const member_found_by_id = members.filter(member => member.id === parseInt(id))
 
     if (newName && newEmail && memberBeforeUpdate.length > 0) {
         members.forEach(member => {
@@ -72,19 +63,29 @@ router.put('/:id', (req, res) => {
                 member.email = newEmail;
             }
         })
-        // res.json({ msg: `Member id #${id} update requested ...`, memberBeforeUpdate, newName, newEmail, members})
         const memberAfterUpdate = member_by_id(id)
         res.json({ msg: `Member id #${id} update requested ...`, memberBeforeUpdate, memberAfterUpdate, members})
     } else {
         return res.status(400).json({ msg: `Please put both, new user name, email and valid id #${id}` })
     }
+})
 
-    // members.forEach(member => {
+// Delete member
+router.delete('/:id', (req, res) => {
+    const id = req.params.id
+    // const newName = req.body.name;
+    // const newEmail = req.body.email;
 
-    // })
+    // const member_by_id = id => members.filter(member => member.id === parseInt(id))
 
-    // res.json({ msg: `Update member id #${id} requested ...`, newName, newEmail})
+    const memberBeforeDelete = member_by_id(id)
 
+    if (memberBeforeDelete.length > 0) {
+        members = members.filter(member => member.id !== parseInt(id))
+        res.json({ msg: `Member id #${id} deletion requested ...`, memberBeforeDelete, members})
+    } else {
+        return res.status(400).json({ msg: `Can not find member with id #${id}` })
+    }
 })
 
 module.exports = router;
